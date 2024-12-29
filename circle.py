@@ -67,6 +67,9 @@ skull_ascii = """
      '-._____.-'
 """
 
+# Initialize start time
+start_time = time.time()
+
 # Function to spawn a ball inside the circle
 def spawn_ball():
     angle = random.uniform(0, 2 * math.pi)
@@ -126,7 +129,7 @@ def draw_button():
     screen.blit(text_surf, text_rect)
 
 # Function to display information on screen
-def display_info():
+def display_info(elapsed_time):
     font = pygame.font.SysFont(None, 24)
 
     # Display ball counts (change labels to Inside, Outside, Total)
@@ -147,6 +150,10 @@ def display_info():
     fps = clock.get_fps()
     fps_text = font.render(f"FPS: {int(fps)}", True, (255, 255, 255))
     screen.blit(fps_text, (300, screen_height - 30))  # Moved to bottom
+
+    # Display elapsed time
+    elapsed_time_text = font.render(f"Time: {int(elapsed_time)}s", True, (255, 255, 255))
+    screen.blit(elapsed_time_text, (450, screen_height - 30))  # Adjust position as needed
 
     # Show the most common ball color inside the circle with count
     ball_colors_in_circle = [tuple(ball["color"]) for ball in balls if not ball["escaped"]]
@@ -186,7 +193,7 @@ def display_crash_message():
 
 # Function to handle simulation updates
 def update_simulation():
-    global rotation_angle, escaped_balls, cpu_usage_avg, memory_usage
+    global rotation_angle, escaped_balls, cpu_usage_avg, memory_usage, start_time
     rotation_angle += 0.02
     rotation_angle %= (2 * math.pi)
 
@@ -234,6 +241,11 @@ def update_simulation():
         cpu_usage_avg = sum(cpu_usage_list) / len(cpu_usage_list)
         memory_usage = psutil.virtual_memory().percent
 
+    # Calculate elapsed time
+    elapsed_time = time.time() - start_time
+
+    return elapsed_time
+
 # Main loop
 running = True
 crashed = False
@@ -272,7 +284,8 @@ while running:
     draw_button()
 
     # Display information (ball counts, CPU, memory, FPS, and most common ball color)
-    display_info()
+    elapsed_time = update_simulation()
+    display_info(elapsed_time)
 
     pygame.display.flip()
     clock.tick(60)
